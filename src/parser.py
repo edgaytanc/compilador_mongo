@@ -23,6 +23,21 @@ class Parser:
                 code_output.append(self.createStatement())
             elif self.lookahead.type == 'ELIMINARBD':
                 code_output.append(self.deleteStatement())
+            # Se anaden nuevas funciones
+            elif self.lookahead.type == 'CREARCOLECCION':
+                code_output.append(self.createCollection())
+            elif self.lookahead.type == 'ELIMINARCOLECCION':
+                code_output.append(self.deleteCollection())
+            elif self.lookahead.type == 'INSERTARUNICO':
+                code_output.append(self.insertOne())
+            elif self.lookahead.type == 'ACTUALIZARUNICO':
+                code_output.append(self.updateOne())
+            elif self.lookahead.type == 'ELIMINARUNICO':
+                code_output.append(self.deleteOne())
+            elif self.lookahead.type == 'BUSCARTODO':
+                code_output.append(self.find())
+            elif self.lookahead.type == 'BUSCARUNICO':
+                code_output.append(self.findOne())
             elif self.lookahead.type == 'END':
                 self.consume()  # Consume el `;` y continúa
                 continue
@@ -36,7 +51,7 @@ class Parser:
         dbname = self.identifier()  # Asume que identifier devuelve el nombre
         if self.lookahead.type == 'END':
             # No consume aquí; deja que el método parse() lo maneje
-            return f"use {dbname};"
+            return f"use('{dbname}');"
         else:
             raise Exception("Syntax Error: Expected ';'")
 
@@ -46,6 +61,69 @@ class Parser:
         if self.lookahead.type == 'END':
             # No consume aquí; deja que el método parse() lo maneje
             return f"db.{dbname}.dropDatabase();"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+        
+    def createCollection(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.createCollection('{dbname}');"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def deleteCollection(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.drop();"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def insertOne(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.inserOne(ARCHIVO JSON);"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def updateOne(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.updateOne(ARCHIVO JSON);"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def deleteOne(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.deleteOne(ARCHIVO JSON);"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def find(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.find();"
+        else:
+            raise Exception("Syntax Error: Expected ';'")
+
+    def findOne(self):
+        self.consume()  # Consume 'ELIMINARBD'
+        dbname = self.identifier()
+        if self.lookahead.type == 'END':
+            # No consume aquí; deja que el método parse() lo maneje
+            return f"db.{dbname}.findOne();"
         else:
             raise Exception("Syntax Error: Expected ';'")
 

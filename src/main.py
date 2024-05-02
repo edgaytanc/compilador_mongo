@@ -5,15 +5,61 @@ from my_ast import AST, NodoCrearBD, NodoEliminarBD, NodoCrearColeccion, NodoEli
 def main():
     # Define el código que será analizado
     code = '''
-    CrearBD ejemplo = nueva CrearBD(); 
-    EliminarBD elimina = nueva EliminarBD(); 
-    CrearColeccion colec = nueva CrearColeccion("NombreColeccion"); 
-    EliminarColeccion eliminacolec = nueva EliminarColeccion("NombreColeccion"); 
-    InsertarUnico insertadoc = nueva InsertarUnico("NombreColeccion", "{ 'nombre': 'Obra Literaria', 'autor': 'Jorge Luis' }"); 
-    ActualizarUnico actualizadoc = nueva ActualizarUnico("NombreColeccion", "{'nombre': 'Obra Literaria'},{$set: {'autor': 'Mario Vargas'}}");   
-    EliminarUnico eliminadoc = nueva EliminarUnico(“NombreColeccion”, “{'nombre': 'Obra Literaria'}”);
-    BuscarTodo todo = nueva BuscarTodo("NombreColeccion"); 
-    BuscarUnico todo = nueva BuscarUnico("NombreColeccion");
+CrearBD DBEjemplo = new CrearBD();
+EliminarBD DBEjemplo = new EliminarBD();
+CrearBD Futbol = new CrearBD();
+CrearColeccion nuevaColeccion = new CrearColeccion("Calificacion");
+EliminarColeccion eliminarColeccion = new EliminarColeccion("Calificacion");
+CrearColeccion nuevaColeccion = new CrearColeccion("Futbolistas");
+--- Messi el único GOAT
+InsertarUnico insertarFutbolista = new InsertarUnico("Futbolistas", 
+{ 
+    "nombre": "Lionel Messi",
+    "club": "Paris Saint-Germain"
+}
+
+/* 
+	Es que Haaland es muy bueno también, pero bueno, centrémonos en LFP :D
+*/
+BuscarTodo todosFutbolistas = new BuscarTodo("Futbolistas");
+BuscarUnico unFutbolista = new BuscarUnico("Futbolistas");
+InsertarUnico insertarFutbolista = new InsertarUnico("Futbolistas", 
+{ 
+    "nombre": "Erling Haaland",
+    "club": "Manchester City"
+}
+);
+ActualizarUnico actualizarFutbolista = new ActualizarUnico("Futbolistas", 
+{
+    "nombre": "Lionel Messi" 
+}, 
+{ 
+     $set: { "club": "Inter Miami" } 
+}
+);
+BuscarTodo todosFutbolistas = new BuscarTodo("Futbolistas");
+BuscarUnico unFutbolista = new BuscarUnico("Futbolistas");
+EliminarUnico eliminarFutbolista = new EliminarUnico("Futbolistas", 
+{ 
+     "nombre": "Lionel Messi" 
+}
+);
+BuscarTodo todosFutbolistas = new BuscarTodo("Futbolistas");
+BuscarUnico unFutbolista = new BuscarUnico("Futbolistas");
+/* 
+	Eliminamos a Haaland para verificar el flujo de información
+*/
+EliminarUnico eliminarFutbolista2 = new EliminarUnico("Futbolistas",
+{
+      "nombre": "Erling Haaland"
+}
+);
+/* 
+	No debería de haber nada en la colección
+*/
+BuscarTodo todosFutbolistas = new BuscarTodo("Futbolistas");
+BuscarUnico unFutbolista = new BuscarUnico("Futbolistas");
+
     '''
 
     # Crea una instancia del lexer y del parser

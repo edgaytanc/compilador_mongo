@@ -58,6 +58,8 @@ class Lexer:
         while self.current_char is not None:
             if self.current_char.isspace():
                 self.skip_whitespace()
+            elif self.current_char == '{':
+                self.tokens.append(self.json())
             elif self.current_char == '-' and self.peek() == '-':
                 self.skip_comment()
             elif self.current_char == '/' and self.peek() == '*':
@@ -135,6 +137,21 @@ class Lexer:
         else:
             self.advance()  # Advance past the current symbol, which should include ';'
         return Token('SYMBOL', symbol, start_line, start_column)
+    
+    def json(self):
+        json_text = ''
+        backet_count = 1 # Inicia con 1 para contar las llaves de apertura inicial
+        self.advance() # avanza mas alla de la llave de apertura '{'
+
+        while self.current_char is not None and backet_count > 0:
+            json_text += self.current_char
+            if self.current_char == '{':
+                backet_count += 1
+            elif self.current_char == '}':
+                backet_count -= 1
+            self.advance()
+
+        return Token('JSON', json_text.strip(), self.current_line, self.current_column)
 
 
     def error(self):

@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
+from lexer import Lexer
+from parser import Parser # type: ignore
+from my_ast import AST, NodoCrearBD, NodoEliminarBD, NodoCrearColeccion, NodoEliminarColeccion, NodoInsertarUnico, NodoActualizarUnico, NodoEliminarUnico, NodoBuscarTodo, NodoBuscarUnico
 
 # Definición de la clase principal de la aplicación
 class CompiladorApp:
@@ -8,6 +11,7 @@ class CompiladorApp:
         self.root.title("Proyecto 2 - LFP")
         self.errores = []  # Lista para almacenar los mensajes de error
         self.root.state('zoomed')
+        self.code =""
 
         # Menú Archivo
         menu_bar = tk.Menu(root)
@@ -91,15 +95,80 @@ class CompiladorApp:
             self.root.destroy()
 
     def analizar_codigo(self):
-        # Lógica para analizar el código
-        pass
+        code = self.text_area.get('1.0', tk.END)
+        print("Código a analizar:", code)
+        lexer = Lexer(code)
+        tokens = lexer.tokenize()
+        if lexer.errors:
+            error_msg = "\n".join(lexer.errors)
+            self.error_area.delete('1.0', tk.END)
+            self.error_area.insert('1.0', error_msg)
+            return
+        
+        parser = Parser(tokens)
+        ast = parser.parse()
+        # self.error_area.insert(parser.errors)
+        if parser.errors:
+            error_msg = "\n".join(parser.errors)
+            self.error_area.delete('1.0', tk.END)
+            self.error_area.insert('1.0', error_msg)
+            return
+        
+        self.mostrar_resultados(ast)
+
+    def mostrar_resultados(self, ast):
+        output = []
+        for node in ast.nodes:
+            if isinstance(node, NodoCrearBD):
+                output.append(f"use('{node.nombre}');")
+            elif isinstance(node, NodoEliminarBD):
+                output.append("db.dropDatabase();")
+            elif isinstance(node, NodoCrearColeccion):
+                output.append(f"db.createCollection('{node.nombre_coleccion}');")
+            elif isinstance(node, NodoEliminarColeccion):
+                output.append(f"db.{node.nombre_coleccion}.drop();")
+            elif isinstance(node, NodoInsertarUnico):
+                output.append(f"db.{node.coleccion}.insertOne({node.documento});")
+            elif isinstance(node, NodoActualizarUnico):
+                output.append(f"db.{node.coleccion}.updateOne({node.nuevo_valor});")
+            elif isinstance(node, NodoEliminarUnico):
+                output.append(f"db.{node.coleccion}.deleteOne({node.criterio});")
+            elif isinstance(node, NodoBuscarTodo):
+                output.append(f"db.{node.coleccion}.find();")
+            elif isinstance(node, NodoBuscarUnico):
+                output.append(f"db.{node.coleccion}.findOne();")
+        self.text_area.delete('1.0', tk.END)
+        self.text_area.insert('1.0', '\n'.join(output))
+
+    def mostrar_errores(self, errors):
+        messagebox.showerror("Errores de compilación", "\n".join(errors))
+
+
 
     def ver_tokens(self):
-        # Lógica para ver los tokens
-        pass
+        code = self.text_area.get('1.0', tk.END)
+        lexer = Lexer(code)
+        tokens = lexer.tokenize()
+        display_text = '\n'.join(str(token) for token in tokens)
+        messagebox.showinfo("Tokens", display_text)
 
     def ver_errores(self):
-        # Logica para mostrar los errores
-        pass
+        # Limpia el área de errores antes de mostrar los nuevos
+        self.error_area.delete('1.0', tk.END)
+
+        # Agrega cada error en la lista de errores al área de texto de errores
+        if self.errores:
+            for error in self.errores:
+                self.error_area.insert(tk.END, error + "\n")
+        else:
+            self.error_area.insert(tk.END, "No se encontraron errores.")
+
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CompiladorApp(root)
+    root.mainloop()
+
 
 

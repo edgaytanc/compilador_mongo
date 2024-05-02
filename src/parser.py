@@ -50,18 +50,34 @@ class Parser:
             return  # Asegúrate de estar en el token correcto al comenzar el método.
         
         self.advance()  # Avanza al IDENTIFIER del nombre de la base de datos.
-        if self.current_token().type == 'IDENTIFIER':
-            nombre = self.current_token().value
-            self.ast.nodes.append(NodoCrearBD(nombre))
-            self.advance()  # Avanza al ';'
-        else:
-            self.error("Expected an identifier for database name.")
         
-        self.advance()  # Debería moverse al siguiente comando o finalizar.
+        if not self.current_token() or self.current_token().type != 'IDENTIFIER':
+            self.error("Se esperaba un identificador para el nombre de la base de datos.")
+            return  # Salir si no hay más tokens o el token no es un IDENTIFIER
+        # print(self.current_token().value)
+        nombre = self.current_token().value
+        self.ast.nodes.append(NodoCrearBD(nombre))
+        
+        self.advance()  # Avanza al ';'
+        self.advance()
+        self.advance()
+        self.advance()
+        self.advance()
+        self.advance()
+        # print(self.current_token().value)
+        
+        if not self.current_token() or self.current_token().type != 'SYMBOL' or self.current_token().value != ';':
+            self.error("Se esperaba un ';' al final de la declaración.")
+            return  # Salir si no hay más tokens o falta el ';'
+        
+        # self.advance()  # Avanza al siguiente comando o termina
+        
+
 
 
     def parse_eliminar_bd(self):
         self.advance()  # Avanza al token 'EliminarBD'
+        # print(self.current_token().type)
         if self.current_token().type == 'IDENTIFIER':
             # Aquí se podría capturar el identificador si fuera necesario usarlo, pero lo ignoramos
             self.advance()  # Avanza al '=', ignoramos el 'nombre' de la base de datos
@@ -69,8 +85,10 @@ class Parser:
             self.advance()  # Avanza a 'EliminarBD'
             self.advance()  # Avanza al '()'
             self.advance()  # Avanza al ';'
+            self.advance()
+            # print(self.current_token().value)
         else:
-            self.error("Expected identifier after 'EliminarBD'")  # Manejo de errores si la estructura no es correcta
+            self.error("Identificador esperado después de 'EliminarBD'")  # Manejo de errores si la estructura no es correcta
 
         # Añade el nodo al AST sin ningún nombre específico
         self.ast.nodes.append(NodoEliminarBD())
@@ -83,14 +101,19 @@ class Parser:
             self.advance()  # Avanza al '='
             self.advance()  # Avanza al 'nueva'
             self.advance()  # Avanza a 'CrearColeccion'
+            self.advance()
+            self.advance()
+            # print(self.current_token().value)
+            coleccion_variable = self.current_token().value
             if self.current_token().type == 'STRING':
                 nombre_coleccion = self.current_token().value  # Captura el nombre de la colección
                 self.advance()  # Avanza al ';'
             else:
-                self.error("Expected collection name as string.")
+                self.error("Nombre de colección esperado como cadena.")
         else:
-            self.error("Expected identifier after 'CrearColeccion'")
-
+            self.error("Identificador esperado después de 'CrearColeccion'")
+        self.advance()
+        # print(self.current_token().value)
         # Añade el nodo al AST usando el nombre de la variable como el identificador de la colección
         self.ast.nodes.append(NodoCrearColeccion(coleccion_variable))
 
@@ -105,135 +128,133 @@ class Parser:
             self.advance()  # Avanza al '('
             self.advance()  # Avanza al nombre de la colección entre comillas, aunque no se usa
             self.advance()  # Avanza al ')'
-            self.advance()  # Avanza al ';'
+            # print(self.current_token().value)
+            # self.advance()  # Avanza al ';'
         else:
-            self.error("Expected identifier after 'EliminarColeccion'")
-
+            self.error("Identificador esperado después de 'EliminarColeccion'")
+        self.advance()
+        # print(self.current_token().value)
         # Añade el nodo al AST usando el nombre de la variable como el identificador de la colección
         self.ast.nodes.append(NodoEliminarColeccion(coleccion_variable))
 
 
     def parse_insertar_unico(self):
         self.advance()  # Avanza al token 'INSERTARUNICO'
-        # print(self.current_token().type)
+
         if self.current_token().type != 'IDENTIFIER':
             self.error("Expected identifier after 'InsertarUnico'")
             return
-        # print(self.current_token().value)
-        coleccion_variable = self.current_token().value
+
         self.advance()  # Avanza al '='
-        self.advance()  # Avanza al 'nueva'
+        self.advance()  # Avanza al 'new'
         self.advance()  # Avanza a 'InsertarUnico'
         self.advance()  # Avanza al '('
-        self.advance()
-        # print(self.current_token().value)
-        # El próximo token debe ser el nombre de la colección, no se utiliza, pero debemos consumirlo.
-        if self.current_token().type != 'STRING':
-            self.error("Expected string for collection name")
-            return
-        coleccion_variable = self.current_token().value
         self.advance()  # Avanza al nombre de la colección
         # print(self.current_token().value)
-        
-        # El próximo token debe ser una coma antes del documento JSON.
-        if self.current_token().value != ',':
-            self.error("Expected ',' after collection name")
+        coleccion_variable = self.current_token().value
+        self.advance()  # Avanza al ','
+        self.advance()
+        # print(self.current_token().value)
+        if self.current_token().type != 'JSON':
+            self.error("Expected JSON data")
             return
-        self.advance()  # Avanza a la coma
 
-        # Ahora capturamos el documento JSON.
-        if self.current_token().type != 'STRING':
-            self.error("Expected JSON document as string")
-            return
-        documento_json = self.current_token().value
-        self.advance()  # Avanza al documento JSON
+        documento_json= '{'
+        documento_json += self.current_token().value
+        self.advance()  # Avanza al token JSON
         self.advance()  # Avanza al ')'
+        # print(self.current_token().value)
         # self.advance()  # Avanza al ';'
         # print(self.current_token().value)
-        # Añadir el nodo con la colección correcta y el documento JSON.
+        # self.advance()
+        # print(self.current_token().value)
+        
         self.ast.nodes.append(NodoInsertarUnico(coleccion_variable, documento_json))
 
 
 
 
+
     def parse_actualizar_unico(self):
+        
         self.advance()  # Avanza al token 'ACTUALIZARUNICO'
-        # print(self.current_token().value)
+        # print(self.current_token().type)
         if self.current_token().type != 'IDENTIFIER':
             self.error("Expected identifier after 'ActualizarUnico'")
-            print("aqui salio")
             return
-        # print(self.current_token().value)
+
         coleccion_variable = self.current_token().value
         self.advance()  # Avanza al '='
-        self.advance()  # Avanza al 'nueva'
+        self.advance()  # Avanza al 'new'
         self.advance()  # Avanza a 'ActualizarUnico'
         self.advance()  # Avanza al '('
+        self.advance()  # Avanza al nombre de la colección
+        # print(self.current_token().type)
+        if self.current_token().type != 'STRING':
+            self.error("Expected collection name as string")
+            return
+        # print(self.current_token().value)
+        coleccion_variable = self.current_token().value
+        self.advance()  # Avanza a la coma
         self.advance()
         # print(self.current_token().value)
-        # Capturar el criterio JSON
-        if self.current_token().type != 'STRING':
-            self.error("Expected JSON document as string for criteria")
+        if self.current_token().type != 'JSON':
+            self.error("Expected JSON criteria")
             return
-        coleccion_variable = self.current_token().value
         criterio = self.current_token().value
         self.advance()  # Avanza al criterio JSON
         # print(self.current_token().value)
-        # Avanzar al separador de criterio y nuevo valor
-        if self.current_token().value != ',':
-            self.error("Expected ',' after criteria JSON")
-            return
         self.advance()  # Avanza a la coma
-        # print(self.current_token().value)
-        # Capturar el nuevo valor JSON
-        if self.current_token().type != 'STRING':
-            self.error("Expected JSON document as string for new value")
+        if self.current_token().type != 'JSON':
+            self.error("Expected JSON update data")
             return
-        
         nuevo_valor = self.current_token().value
         self.advance()  # Avanza al nuevo valor JSON
+
         self.advance()  # Avanza al ')'
         # self.advance()  # Avanza al ';'
         # print(self.current_token().value)
+
         # Añadir el nodo al AST
         self.ast.nodes.append(NodoActualizarUnico(coleccion_variable, criterio, nuevo_valor))
 
 
+
     def parse_eliminar_unico(self):
         self.advance()  # Avanza al token 'ELIMINARUNICO'
-        # print(self.current_token().value)
+        print(self.current_token().type)
         if self.current_token().type != 'IDENTIFIER':
             self.error("Expected identifier after 'EliminarUnico'")
             return
         
         coleccion_variable = self.current_token().value
         self.advance()  # Avanza al '='
-        self.advance()  # Avanza al 'nueva'
+        self.advance()  # Avanza al 'new'
         self.advance()  # Avanza a 'EliminarUnico'
         self.advance()  # Avanza al '('
-        self.advance()
-        # print(self.current_token().value)
-        # Capturar el criterio JSON
+        self.advance()  # Avanza al nombre de la colección
+        print(self.current_token().type)
         if self.current_token().type != 'STRING':
-            self.error("Expected JSON document as string for deletion criteria")
-            return
-        coleccion_variable = self.current_token().value
-        
-        self.advance()  # Avanza al documento JSON
-        if self.current_token().value != ',':
-            self.error("Expected ',' after collection name")
+            self.error("Expected collection name as string")
             return
 
-        self.advance()  # Avanza al ')'
-        if self.current_token().type != 'STRING':
-            self.error("Expected JSON document as string")
+        coleccion_variable = self.current_token().value
+        self.advance()  # Avanza a la coma
+        self.advance()
+        print(self.current_token().type)
+        if self.current_token().type != 'JSON':
+            self.error("Expected JSON document as string for deletion criteria")
             return
-        criterio = self.current_token().value
-        self.advance()  # Avanza al ';'
-        self.advance()  # Avanza al ';'
-        # print(self.current_token().value)
+        criterio = '{'
+        criterio += self.current_token().value
+        self.advance()  # Avanza al documento JSON
+
+        self.advance()  # Avanza al ')'
+        # self.advance()  # Avanza al ';'
+        print(self.current_token().value)
         # Añadir el nodo al AST
         self.ast.nodes.append(NodoEliminarUnico(coleccion_variable, criterio))
+
 
 
     def parse_buscar_todo(self):
